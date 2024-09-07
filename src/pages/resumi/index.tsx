@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import Navbar from '../../components/navbar';
+import axios from '../../api';
 import rasm from '../../assets/images/riz.png';
-
+import { Link } from 'react-router-dom';
+import { TbLogin2 } from 'react-icons/tb';
+import logo from '../../assets/images/riz1.png'
 interface Profile {
   network: string;
   url: string;
@@ -95,9 +96,6 @@ interface ResumeData {
 
 const Resumi: React.FC = () => {
   let isLogin = localStorage.getItem("x-auth-token");
-
-
-
   const [resumeData, setResumeData] = useState<ResumeData>({
     basics: {
       email: "",
@@ -118,7 +116,7 @@ const Resumi: React.FC = () => {
         { network: "", url: "", username: "" },
         { network: "", url: "", username: "" },
       ],
-      salary: +"",
+      salary: 0,
       summary: "",
       url: ""
     },
@@ -161,14 +159,14 @@ const Resumi: React.FC = () => {
     }],
     meta: {
       lang: "eng",
-      template: "basic"
+      template: ""
     },
     projects: [
       { description: "", name: "", url: "" },
       { description: "", name: "", url: "" },
       { description: "", name: "", url: "" },
     ],
-    salary: +"",
+    salary: 0,
     skills: [{ keywords: [""], level: "", name: "" }],
     work: [{
       company: "",
@@ -182,7 +180,23 @@ const Resumi: React.FC = () => {
     }]
   });
 
+  const [data, setData] = useState<string>("");
+  const [selectedTemplates, setSelectedTemplates] = useState({
+    meta: {
+      lang: "eng",
+      template: "",
+    },
+  });
 
+  const handleChanges = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTemplates((prevState) => ({
+      ...prevState,
+      meta: {
+        ...prevState.meta,
+        template: e.target.value,
+      },
+    }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -211,20 +225,33 @@ const Resumi: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-   
-    console.log(resumeData);
-    
-    try {
-      const response = await axios.post('https://api.cvmaker.uz/v1/resume/generate-resume', resumeData,{
+    let list ={
+      basic:{
+        email: resumeData.basics.email,
+        experience_year: resumeData.basics.experience_year,
+        image: resumeData.basics.image,
+        salary: resumeData.basics.salary,
+      },
+      meta:{
+        lang: selectedTemplates.meta.lang,
+        template: selectedTemplates.meta.template,
+      }
+    }
+    console.log(list);
+
+    axios
+      .post('/resume/generate-resume', list, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${isLogin}`
         }
-      });
-      console.log('Resume generated:', response.data);
-    } catch (error) {
-      console.error('Error generating resume:', error);
-    }
+      })
+      .then((response) => {
+        setData(response.data.resume.split(" ")[0]);
+      })
+      .catch((error) => {
+        console.error('Error generating resume:', error);
+      })
   };
 
 
@@ -233,7 +260,8 @@ const Resumi: React.FC = () => {
   const renderTemplate = () => {
     switch (selectedTemplate) {
       case 'classic':
-        return <div >
+        return<>
+         <div >
           <div className='flex px-[20px] w-[700px]   items-center justify-between py-[10px]'>
            <div className="">
            <h1 className='text-2xl  font-bold text-black'>John32</h1>
@@ -242,7 +270,7 @@ const Resumi: React.FC = () => {
               <ul  className='flex  gap-4  mt-4'>
 
              
-              <li>email</li>
+              <li>{resumeData.basics.email}</li>
               <li>Link</li>
               <li>Git hub</li>
               <li>uzum.uz</li>
@@ -260,7 +288,7 @@ const Resumi: React.FC = () => {
       <div className="py-[20px] px-[30px]   flex gap-4">
 
          <div className="">
-           <h1 className='text-2xl  font-bold text-black'>Experiences</h1>
+         <h1 className='text-2xl  font-bold text-black'>Experiences</h1>
            <h1 className='text-lg  font-bold text-black'>Lorem ipsum dolor sit amet.</h1>
          <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quibusdam, et placeat! Dolorum adipisci qui, labore inventore laudantium perspiciatis velit quod consectetur dolore, libero eveniet, omnis officia. Beatae facilis similique optio.</p>
 
@@ -301,61 +329,108 @@ const Resumi: React.FC = () => {
       </div>
 
 
-        </div>;
+        </div>
+        </>;
       case 'simple':
-        return <div className='flex'>
-          <div className="bg-slate-300 w-[200px] h-full mt-[20px]">
-           <div className="py-[20px]">
-          <div className="flex justify-center items-center">
-          <img className='w-[100px] h-[100px] rounded-[50%] object-cover' src={rasm} alt="" />
-          </div>
-
-         <div className="px-[10px] ">
-         <h1 className='text-xl  font-bold'>Contact</h1>
-         <p>salom</p>
-         <p>salom</p>
-         <p>salom</p>
-         <p>salom</p>
-         <p>salom</p>
-         <p>salom</p>
-
-         <h1 className='text-xl  font-bold'>Education</h1>
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint facere veniam exercitationem, ex soluta! Repellendus, cupiditate doloribus?</p>
-         <p className='py-[20px]'>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
-
-         <h1 className='text-xl  font-bold'>Certifications</h1>
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
-         <h1 className='text-xl  font-bold'>Skills</h1>
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
-         <h1 className='text-xl  font-bold'>Soft Skills</h1>
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
-         <h1 className='text-xl  font-bold'>Languages</h1>
-         <p>salom</p>
-         <p>salom</p>
-         <p>salom</p>
-
-         <h1 className='text-xl  font-bold'>Hobbies</h1>
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
-
-         </div>
+        return <div >
+          <div className='flex px-[20px] w-[700px]   items-start justify-between py-[10px]'>
+           <div className="">
+           <h1 className='text-2xl  font-bold text-black'>John32</h1>
+              <h2 className='text-xl  font-bold text-black'>Frontend developer</h2>
+              <ul  className='flex flex-col'>
+              <li>{resumeData.basics.email}</li>
+              <li>Link</li>
+              <li>Git hub</li>
+              <li>uzum.uz</li>
+              <li>Parij</li>
+              </ul>
+          
            </div>
-          </div>
-          <div className="w-[500px] mt-[20px]">
-           <div className="bg-slate-600 py-[20px] px-[30px]">
-           <h1 className='text-2xl  font-bold text-white'>John32</h1>
-              <h2 className='text-xl  font-bold text-white'>Frontend developer</h2>
-              <p className='text-white'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi obcaecati animi repudiandae eos consectetur error ipsum dolore repellendus quis accusamus porro, excepturi at amet quia! Voluptate ex architecto rem porro.</p>
+           
+           <div className="">
+           <img className='w-[100px] h-[100px] rounded-[50%] object-cover' src={rasm} alt="" />
            </div>
-           <div className="py-[20px] px-[30px]">
-           <h1 className='text-2xl  font-bold text-black'>Experiences</h1>
-           <h1 className='text-lg  font-bold text-black'>Lorem ipsum dolor sit amet.</h1>
-         <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Quibusdam, et placeat! Dolorum adipisci qui, labore inventore laudantium perspiciatis velit quod consectetur dolore, libero eveniet, omnis officia. Beatae facilis similique optio.</p>
+           
+      </div>
+     <div className="px-[20px]">
+     <h1 className='text-2xl  font-bold text-black '>Profile</h1>
+     <div className="w-full h-[1px] bg-slate-300"></div>  <div className="w-full h-[2px] bg-slate-300"></div>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ab iste, eaque pariatur numquam quibusdam quod mollitia dolorum tenetur autem perspiciatis. Eius ab aliquam quod quisquam dolorum facilis adipisci, ea similique!</p>
 
-         <h1 className='text-2xl  font-bold text-black'>Projects</h1>
-         <h1 className='text-lg  font-bold text-black'>Lorem ipsum dolor sit amet.</h1>
-         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quia, in.</p>
-           </div>
-          </div>
+      <div className="flex gap-4 py-[20px]">
+        <div className="">
+        <h1 className='text-xl  font-bold'>Skills</h1>
+        <div className="w-full h-[2px] bg-slate-300"></div>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
+      
+        </div>
+        <div className="">
+        <h1 className='text-xl  font-bold'>Soft Skills</h1>
+        <div className="w-full h-[2px] bg-slate-300"></div>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
+        </div>
+      </div>
+      <h1 className='text-2xl  font-bold text-black'>Experiences</h1>
+      <div className="w-full h-[2px] bg-slate-300"></div>
+      <div className="flex items-start py-[20px] gap-16">
+      <div className="text-slate-500">
+          <p >September 2020</p>
+        </div>
+        <div className="">
+          <h1 className='text-lg  font-bold text-black' >DevOps Engineer</h1>
+          <p className='text-lg font-bold text-slate-500'>Lorem ipsum dolor sit amet.</p>
+           <p className="w-[500px]">Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore, obcaecati officia! Ipsam repellat blanditiis consequuntur, voluptatem ex alias quis quas optio? Minus, provident nisi a alias harum quos iste doloremque!</p>
+        </div>
+      </div>
+
+      <div className="flex gap-4 py-[20px]">
+        <div className="">
+        <h1 className='text-xl  font-bold'>Projects</h1>
+        <div className="w-full h-[2px] bg-slate-300"></div>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
+      
+        </div>
+        <div className="">
+        <h1 className='text-xl  font-bold'>Certifications</h1>
+        <div className="w-full h-[2px] bg-slate-300"></div>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
+        </div>
+      </div>
+
+
+      <h1 className='text-2xl  font-bold text-black'>Education</h1>
+      <div className="w-full h-[2px] bg-slate-300"></div>
+      <div className="flex py-[20px] gap-10">
+        <div >
+        <p className="text-slate-500">Alta Nova University</p>
+     <p>Lorem ipsum dolor sit amet.</p>
+     <p className="text-slate-500">2015</p>
+        </div>
+        <div >
+        <p className="text-slate-500">Alta Nova University</p>
+     <p>Lorem ipsum dolor sit amet.</p>
+     <p className="text-slate-500">2015</p>
+        </div>
+      </div>
+
+
+      <div className="flex gap-4 py-[20px]">
+        <div className="">
+        <h1 className='text-xl  font-bold'>Languages</h1>
+        <div className="w-full h-[2px] bg-slate-300"></div>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
+      
+        </div>
+        <div className="">
+        <h1 className='text-xl  font-bold'>Hobbies</h1>
+        <div className="w-full h-[2px] bg-slate-300"></div>
+         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquid nulla maiores sint</p>
+        </div>
+      </div>
+     </div>
+    
+
+
         </div>;
       default:
         return <div className='flex'>
@@ -416,12 +491,28 @@ const Resumi: React.FC = () => {
   };
   return (
     <>
-      <Navbar />
-
+         <header className="bg-white bg-opacity-50 z-80 fixed top-0 left-0 right-0" >
+        <div className="container">
+            <nav className=" flex justify-between items-center py-[30px] ">
+                <ul>
+                <Link to={'/'}>  <img src={logo} alt=""  className='w-[100px] h-[40px] object-contain z-50 cursor-pointer'/></Link>
+                </ul>
+            
+               <Link to={'/login'}>
+               <div className="px-[5px] py-[5px] bg-slate-400 rounded-md cursor-pointer">
+                    <div className="text-2xl text-white">
+                         <TbLogin2/>
+                    </div>
+                </div>
+               </Link>
+            </nav>
+        </div>
+       </header>
       <div className="hom min-h-screen">
         <div className="flex items-center justify-center overflow-auto h-full px-[60px] gap-[20px]">
           <div className="w-[500px] max-w-2xl bg-white shadow-lg rounded-lg p-8 mt-[22.5%] h-full overflow-auto   ">
             <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Create Your Resume</h1>
+           
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -449,6 +540,15 @@ const Resumi: React.FC = () => {
                 />
               </div>
 
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Experience Year</label>
+                <select onChange={handleChanges} className="p-2 border border-gray-300 rounded-md">
+                <option value="basic">Basic</option>
+                <option value="classic">Classic</option>
+                <option value="simple">Simple</option>
+              </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phone</label>
                 <input
@@ -476,7 +576,7 @@ const Resumi: React.FC = () => {
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700">Profiles network</label>
                 <input
                   type="text"
@@ -513,7 +613,7 @@ const Resumi: React.FC = () => {
                   required
                   className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                 />
-              </div>
+              </div> */}
 
               <button
                 type="submit"
@@ -521,12 +621,21 @@ const Resumi: React.FC = () => {
               >
                 Generate Resume
               </button>
+            {
+              data ? 
+                <button  className="w-full bg-indigo-600 text-white p-2 rounded-md shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <a href={data}>Resumi Link</a>
+                </button>
+                :
+                ""
+            }
             </form>
+            <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Numquam, dolorem.</p>
           </div>
-          <div className="text-black  h-full overflow-auto  w-[700px] mt-[22.5%]  bg-white py-[40px]  rounded-lg">
+          <div className="text-black  h-full overflow-auto  w-[750px] mt-[22.5%]  bg-white py-[40px]  rounded-lg">
           <div>
       <nav>
-        <ul className='flex items-center gap-4 cursor-pointer'>
+        <ul className='flex items-center gap-4 cursor-pointer px-[20px] text-2xl py-[10px]'>
           <li onClick={() => setSelectedTemplate('basic')}>Basic</li>
           <li onClick={() => setSelectedTemplate('classic')}>Classic</li>
           <li onClick={() => setSelectedTemplate('simple')}>Simple</li>
